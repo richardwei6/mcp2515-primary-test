@@ -12,6 +12,7 @@ void setup() {
 }
 
 struct can_frame frame;
+uint8_t c = 0;
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -34,11 +35,12 @@ void loop() {
 
   frame.can_id = 1;
   frame.can_dlc = 1;
-  frame.data[0] = 1;
+  frame.data[0] = c;
 
   mcp2515.sendMessage(&frame);
-  Serial.println("sent req frame");
-
+  Serial.print("sent req frame = ");
+  Serial.println(c);
+  c++;
   //
 
   frame = can_frame();
@@ -46,7 +48,8 @@ void loop() {
   //
 
   int t = 0;
-  while (t < 100){
+  while (t < 20){
+    
     if (mcp2515.readMessage(&frame) == MCP2515::ERROR_OK && frame.can_id == 2){
         Serial.print("recieved success can frame -> ");
         Serial.print("id = ");
@@ -55,7 +58,8 @@ void loop() {
         Serial.print(frame.can_dlc);
         Serial.print("; data = ");
         Serial.println(frame.data[0]);
-        goto recvmsg;
+        delay(50);
+        return;
     }
     t++;
     delay(50);
@@ -63,8 +67,5 @@ void loop() {
 
   // no msg recv
   Serial.println("failed to recv success frame");
-  return;
-
-  recvmsg:
-  delay(1000);
 }
+
